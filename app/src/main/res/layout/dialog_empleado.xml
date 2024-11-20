@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/nombreEmpleadoInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nombre" />
+
+    <EditText
+        android:id="@+id/apellidoEmpleadoInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Apellido"
+        android:layout_marginTop="8dp" />
+
+    <EditText
+        android:id="@+id/cargoEmpleadoInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Cargo"
+        android:layout_marginTop="8dp" />
+
+    <EditText
+        android:id="@+id/salarioEmpleadoInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Salario"
+        android:inputType="numberDecimal"
+        android:layout_marginTop="8dp" />
+</LinearLayout>
