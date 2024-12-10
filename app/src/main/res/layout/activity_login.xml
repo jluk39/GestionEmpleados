@@ -19,7 +19,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Logueo Gerente"
+        android:text="Inicio de Sesión"
         android:textSize="22sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -36,7 +36,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Nombre de Usuario"
+        android:text="Nombre de Usuario | DNI si sos empleados"
         android:textSize="14sp"
         android:layout_marginBottom="4dp" />
 

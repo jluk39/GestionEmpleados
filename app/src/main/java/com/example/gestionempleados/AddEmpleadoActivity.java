@@ -11,7 +11,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class AddEmpleadoActivity extends AppCompatActivity {
-    private EditText nombreInput, apellidoInput, salarioInput;
+    private EditText nombreInput, apellidoInput, salarioInput, dniInput;
     private Spinner especialidadSpinner, turnoSpinner;
     private Button saveButton, cancelButton, deleteButton;
     private DatabaseHelper db;
@@ -26,6 +26,7 @@ public class AddEmpleadoActivity extends AppCompatActivity {
         especialidadSpinner = findViewById(R.id.especialidadEmpleadoSpinner);
         turnoSpinner = findViewById(R.id.turnoEmpleadoSpinner);
         salarioInput = findViewById(R.id.salarioEmpleadoInput);
+        dniInput = findViewById(R.id.dniEmpleadoInput);
         saveButton = findViewById(R.id.saveEmpleadoButton);
         cancelButton = findViewById(R.id.cancelEmpleadoButton);
         deleteButton = findViewById(R.id.deleteEmpleadoButton);
@@ -34,7 +35,7 @@ public class AddEmpleadoActivity extends AppCompatActivity {
 
         db = new DatabaseHelper(this);
 
-        // spinner de especialidad
+        // Spinner de especialidad
         ArrayAdapter<CharSequence> especialidadAdapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.especialidades_array,
@@ -43,7 +44,7 @@ public class AddEmpleadoActivity extends AppCompatActivity {
         especialidadAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         especialidadSpinner.setAdapter(especialidadAdapter);
 
-        // spinner turno
+        // Spinner de turno
         ArrayAdapter<CharSequence> turnoAdapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.turnos_array,
@@ -58,16 +59,22 @@ public class AddEmpleadoActivity extends AppCompatActivity {
             String especialidad = especialidadSpinner.getSelectedItem().toString();
             String turno = turnoSpinner.getSelectedItem().toString();
             String salarioStr = salarioInput.getText().toString().trim();
+            String dniStr = dniInput.getText().toString().trim();
 
-            if (nombre.isEmpty() || apellido.isEmpty() || salarioStr.isEmpty()) {
+            if (nombre.isEmpty() || apellido.isEmpty() || salarioStr.isEmpty() || dniStr.isEmpty()) {
                 Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
             } else {
-                double salario = Double.parseDouble(salarioStr);
-                if (db.agregarEmpleado(nombre, apellido, especialidad, turno, salario)) {
-                    Toast.makeText(this, "Empleado agregado", Toast.LENGTH_SHORT).show();
-                    finish();
-                } else {
-                    Toast.makeText(this, "Error al agregar empleado", Toast.LENGTH_SHORT).show();
+                try {
+                    double salario = Double.parseDouble(salarioStr);
+                    int dni = Integer.parseInt(dniStr);
+                    if (db.agregarEmpleado(nombre, apellido, especialidad, turno, salario, dni)) {
+                        Toast.makeText(this, "Empleado agregado", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        Toast.makeText(this, "Error al agregar empleado", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (NumberFormatException e) {
+                    Toast.makeText(this, "DNI y salario deben ser números válidos", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -75,4 +82,3 @@ public class AddEmpleadoActivity extends AppCompatActivity {
         cancelButton.setOnClickListener(view -> finish());
     }
 }
-

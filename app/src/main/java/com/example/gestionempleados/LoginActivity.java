@@ -29,25 +29,66 @@ public class LoginActivity extends AppCompatActivity {
             String username = usernameInput.getText().toString().trim();
             String password = passwordInput.getText().toString().trim();
 
-            Cursor cursor = db.obtenerUsuarios();
-            boolean isAuthenticated = false;
-            String userName = null;
+            if (username.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Por favor ingrese usuario y contraseña", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-            while (cursor.moveToNext()) {
-                if (username.equals(cursor.getString(2)) && password.equals(cursor.getString(4))) {
-                    isAuthenticated = true;
-                    userName = cursor.getString(1);
+            // Intentar login como Administrador
+            Cursor adminCursor = db.obtenerUsuarios();
+            boolean isAdminAuthenticated = false;
+            String adminName = null;
+
+            while (adminCursor.moveToNext()) {
+                if (username.equals(adminCursor.getString(2)) && password.equals(adminCursor.getString(4))) {
+                    isAdminAuthenticated = true;
+                    adminName = adminCursor.getString(1);
                     break;
                 }
             }
+            adminCursor.close();
 
-            cursor.close();
-
-            if (isAuthenticated) {
-                Toast.makeText(this, "Login exitoso", Toast.LENGTH_SHORT).show();
+            if (isAdminAuthenticated) {
+                Toast.makeText(this, "Login como Administrador exitoso", Toast.LENGTH_SHORT).show();
 
                 Intent intent = new Intent(this, MainActivity.class);
-                intent.putExtra("USER_NAME", userName);
+                intent.putExtra("USER_NAME", adminName);
+                startActivity(intent);
+                finish();
+                return;
+            }
+
+            // Intentar login como Empleado
+            Cursor employeeCursor = db.obtenerEmpleados();
+            boolean isEmployeeAuthenticated = false;
+            String employeeName = null;
+            double employeeSalary = 0;
+            String employeePosition = null;
+            String employeeShift = null;
+            int employeeDni = 0;
+
+            while (employeeCursor.moveToNext()) {
+                if (username.equals(employeeCursor.getString(6)) && password.equals(employeeCursor.getString(6))) { // DNI como usuario y contraseña
+                    isEmployeeAuthenticated = true;
+                    employeeName = employeeCursor.getString(1) + " " + employeeCursor.getString(2);
+                    employeeSalary = employeeCursor.getDouble(5) * 160;
+                    employeePosition = employeeCursor.getString(3);
+                    employeeShift = employeeCursor.getString(4);
+                    employeeDni = employeeCursor.getInt(6);
+                    break;
+                }
+            }
+            employeeCursor.close();
+
+            if (isEmployeeAuthenticated) {
+                Toast.makeText(this, "Login como Empleado exitoso", Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent(this, EmployeeDetailsActivity.class);
+                intent.putExtra("EMPLOYEE_NAME", employeeName);
+                intent.putExtra("EMPLOYEE_SALARY", employeeSalary);
+                intent.putExtra("EMPLOYEE_POSITION", employeePosition);
+                intent.putExtra("EMPLOYEE_SHIFT", employeeShift);
+                intent.putExtra("EMPLOYEE_DNI", employeeDni);
                 startActivity(intent);
                 finish();
             } else {
@@ -58,5 +99,3 @@ public class LoginActivity extends AppCompatActivity {
         registerButton.setOnClickListener(view -> startActivity(new Intent(this, RegisterActivity.class)));
     }
 }
-
-

@@ -13,7 +13,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class EditEmpleadoActivity extends AppCompatActivity {
-    private EditText nombreInput, apellidoInput, salarioInput;
+    private EditText nombreInput, apellidoInput, salarioInput, dniInput;
     private Spinner especialidadSpinner, turnoSpinner;
     private Button updateButton, cancelButton, deleteButton;
     private DatabaseHelper db;
@@ -29,6 +29,7 @@ public class EditEmpleadoActivity extends AppCompatActivity {
         especialidadSpinner = findViewById(R.id.especialidadEmpleadoSpinner);
         turnoSpinner = findViewById(R.id.turnoEmpleadoSpinner);
         salarioInput = findViewById(R.id.salarioEmpleadoInput);
+        dniInput = findViewById(R.id.dniEmpleadoInput);
         updateButton = findViewById(R.id.saveEmpleadoButton);
         cancelButton = findViewById(R.id.cancelEmpleadoButton);
         deleteButton = findViewById(R.id.deleteEmpleadoButton);
@@ -39,7 +40,7 @@ public class EditEmpleadoActivity extends AppCompatActivity {
         db = new DatabaseHelper(this);
         empleadoId = getIntent().getIntExtra("empleadoId", -1);
 
-        // spinner de especialidad
+        // Spinner de especialidad
         ArrayAdapter<CharSequence> especialidadAdapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.especialidades_array,
@@ -48,7 +49,7 @@ public class EditEmpleadoActivity extends AppCompatActivity {
         especialidadAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         especialidadSpinner.setAdapter(especialidadAdapter);
 
-        // spinner turno
+        // Spinner de turno
         ArrayAdapter<CharSequence> turnoAdapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.turnos_array,
@@ -65,16 +66,22 @@ public class EditEmpleadoActivity extends AppCompatActivity {
             String especialidad = especialidadSpinner.getSelectedItem().toString();
             String turno = turnoSpinner.getSelectedItem().toString();
             String salarioStr = salarioInput.getText().toString().trim();
+            String dniStr = dniInput.getText().toString().trim();
 
-            if (nombre.isEmpty() || apellido.isEmpty() || salarioStr.isEmpty()) {
+            if (nombre.isEmpty() || apellido.isEmpty() || salarioStr.isEmpty() || dniStr.isEmpty()) {
                 Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
             } else {
-                double salario = Double.parseDouble(salarioStr);
-                if (db.actualizarEmpleado(empleadoId, nombre, apellido, especialidad, turno, salario)) {
-                    Toast.makeText(this, "Empleado actualizado", Toast.LENGTH_SHORT).show();
-                    finish();
-                } else {
-                    Toast.makeText(this, "Error al actualizar empleado", Toast.LENGTH_SHORT).show();
+                try {
+                    double salario = Double.parseDouble(salarioStr);
+                    int dni = Integer.parseInt(dniStr);
+                    if (db.actualizarEmpleado(empleadoId, nombre, apellido, especialidad, turno, salario, dni)) {
+                        Toast.makeText(this, "Empleado actualizado", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        Toast.makeText(this, "Error al actualizar empleado", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (NumberFormatException e) {
+                    Toast.makeText(this, "DNI y salario deben ser números válidos", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -100,6 +107,7 @@ public class EditEmpleadoActivity extends AppCompatActivity {
                 turnoSpinner.setSelection(turnoAdapter.getPosition(turno));
 
                 salarioInput.setText(String.valueOf(cursor.getDouble(5)));
+                dniInput.setText(String.valueOf(cursor.getInt(6))); // Carga el DNI
                 break;
             }
         }
@@ -112,10 +120,10 @@ public class EditEmpleadoActivity extends AppCompatActivity {
         builder.setMessage("¿Estás seguro de que deseas eliminar este empleado?");
         builder.setPositiveButton("Sí", (dialog, which) -> {
             if (db.eliminarEmpleado(empleadoId)) {
-                Toast.makeText(this, "Personal eliminado", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Empleado eliminado", Toast.LENGTH_SHORT).show();
                 finish();
             } else {
-                Toast.makeText(this, "Error al eliminar personal", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Error al eliminar empleado", Toast.LENGTH_SHORT).show();
             }
         });
         builder.setNegativeButton("No", (dialog, which) -> dialog.dismiss());

@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "empleadosApp.db";
-    private static final int DATABASE_VERSION = 9;
+    private static final int DATABASE_VERSION = 11;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -30,7 +30,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "apellido TEXT, " +
                 "especialidad TEXT, " +
                 "turno TEXT, " +
-                "salario REAL)";
+                "salario REAL, " +
+                "dni INTEGER UNIQUE)";
         db.execSQL(createEmpleadosTable);
 
         ContentValues adminUser = new ContentValues();
@@ -43,9 +44,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion < 9) {
-            db.execSQL("ALTER TABLE empleados ADD COLUMN especialidad TEXT");
-            db.execSQL("ALTER TABLE empleados ADD COLUMN turno TEXT");
+        if (oldVersion < 11) {
+            // Crear una tabla nueva con el campo dni como INTEGER UNIQUE
+            String createEmpleadosTempTable = "CREATE TABLE empleados_new (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "nombre TEXT, " +
+                    "apellido TEXT, " +
+                    "especialidad TEXT, " +
+                    "turno TEXT, " +
+                    "salario REAL, " +
+                    "dni INTEGER UNIQUE)";
+            db.execSQL(createEmpleadosTempTable);
+
+            // Copiar datos de la tabla antigua
+            db.execSQL("INSERT INTO empleados_new (id, nombre, apellido, especialidad, turno, salario) " +
+                    "SELECT id, nombre, apellido, especialidad, turno, salario FROM empleados");
+
+            // Eliminar la tabla antigua
+            db.execSQL("DROP TABLE empleados");
+
+            // Renombrar la tabla nueva
+            db.execSQL("ALTER TABLE empleados_new RENAME TO empleados");
         }
     }
 
@@ -82,7 +101,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result > 0;
     }
 
-    public boolean agregarEmpleado(String nombre, String apellido, String especialidad, String turno, double salario) {
+    public boolean agregarEmpleado(String nombre, String apellido, String especialidad, String turno, double salario, int dni) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("nombre", nombre);
@@ -90,6 +109,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("especialidad", especialidad);
         values.put("turno", turno);
         values.put("salario", salario);
+        values.put("dni", dni);
         long result = db.insert("empleados", null, values);
         return result != -1;
     }
@@ -99,7 +119,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery("SELECT * FROM empleados", null);
     }
 
-    public boolean actualizarEmpleado(int id, String nombre, String apellido, String especialidad, String turno, double salario) {
+    public boolean actualizarEmpleado(int id, String nombre, String apellido, String especialidad, String turno, double salario, int dni) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("nombre", nombre);
@@ -107,6 +127,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("especialidad", especialidad);
         values.put("turno", turno);
         values.put("salario", salario);
+        values.put("dni", dni);
         int result = db.update("empleados", values, "id = ?", new String[]{String.valueOf(id)});
         return result > 0;
     }
@@ -115,5 +136,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         int result = db.delete("empleados", "id = ?", new String[]{String.valueOf(id)});
         return result > 0;
+    }
+
+    public Cursor buscarEmpleadoPorDni(int dni) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM empleados WHERE dni = ?", new String[]{String.valueOf(dni)});
     }
 }

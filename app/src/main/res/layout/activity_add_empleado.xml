@@ -36,6 +36,21 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="DNI"
+        android:textSize="14sp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp" />
+
+    <EditText
+        android:id="@+id/dniEmpleadoInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Ingrese el DNI"
+        android:inputType="number" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:text="Especialidad"
         android:textSize="14sp"
         android:layout_marginTop="8dp"
@@ -64,7 +79,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Salario"
+        android:text="Salario/Hora"
         android:textSize="14sp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="4dp" />
