@@ -1,0 +1,9 @@
+<resources>
+    <!-- estilo principal -->
+    <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/background_light_yellow</item>
+        <item name="android:textColor">@color/text_dark</item>
+        <item name="colorPrimary">@color/button_primary</item>
+        <item name="colorOnPrimary">@color/button_primary_text</item>
+    </style>
+</resources>

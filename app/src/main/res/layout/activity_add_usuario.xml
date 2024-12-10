@@ -4,17 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
-    android:padding="20dp">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Registro Administrador"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginBottom="16dp" />
+    android:padding="16dp">
 
     <TextView
         android:layout_width="match_parent"
@@ -24,73 +14,82 @@
         android:layout_marginBottom="4dp" />
 
     <EditText
-        android:id="@+id/nameInput"
-        android:hint="Ingrese su nombre"
+        android:id="@+id/nombreInput"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:hint="Ingrese el nombre" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Usuario"
         android:textSize="14sp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="4dp" />
 
     <EditText
-        android:id="@+id/usernameInput"
-        android:hint="Ingrese su usuario"
+        android:id="@+id/usuarioInput"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:hint="Ingrese el usuario" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Correo electrónico"
+        android:text="Email"
         android:textSize="14sp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="4dp" />
 
     <EditText
         android:id="@+id/emailInput"
-        android:hint="Ingrese su correo electrónico"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textEmailAddress" />
+        android:hint="Ingrese el email" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Contraseña"
         android:textSize="14sp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="4dp" />
 
     <EditText
         android:id="@+id/passwordInput"
-        android:hint="Ingrese su contraseña"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="Ingrese la contraseña"
         android:inputType="textPassword" />
 
     <Button
-        android:id="@+id/registerButton"
+        android:id="@+id/saveUsuarioButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Registrar Usuario"
-        android:layout_marginTop="20dp"
+        android:text="Guardar"
+        android:layout_marginTop="16dp"
         android:backgroundTint="@color/button_primary"
         android:textColor="@color/button_primary_text" />
 
     <Button
-        android:id="@+id/backButton"
+        android:id="@+id/cancelUsuarioButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Volver"
-        android:layout_marginTop="10dp"
+        android:text="Cancelar"
+        android:layout_marginTop="8dp"
         android:backgroundTint="#000000"
         android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/deleteUsuarioButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Eliminar"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="#FF0000"
+        android:textColor="#FFFFFF" />
 </LinearLayout>
+
 
 
 

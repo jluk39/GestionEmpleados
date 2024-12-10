@@ -6,15 +6,51 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="CRUD Usuarios Aplicación"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/backToDashboardButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Volver"
+        android:padding="8dp"
+        android:layout_gravity="start"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="#000000"
+        android:textColor="@android:color/white" />
+
     <Button
         android:id="@+id/addUsuarioButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Agregar Usuario"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/button_primary"
+        android:textColor="@color/button_primary_text" />
+
+    <TextView
+        android:id="@+id/noUsuariosTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No se encontraron usuarios"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_marginTop="16dp" />
 
     <ListView
         android:id="@+id/usuariosListView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 </LinearLayout>
+
+
+
+

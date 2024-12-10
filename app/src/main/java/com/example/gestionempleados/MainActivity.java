@@ -8,7 +8,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
-    private Button crudUsuariosButton, crudEmpleadosButton;
+    private Button crudUsuariosButton, crudEmpleadosButton, logoutButton;
     private TextView welcomeText;
 
     @Override
@@ -18,9 +18,10 @@ public class MainActivity extends AppCompatActivity {
 
         crudUsuariosButton = findViewById(R.id.crudUsuariosButton);
         crudEmpleadosButton = findViewById(R.id.crudEmpleadosButton);
+        logoutButton = findViewById(R.id.logoutButton);
         welcomeText = findViewById(R.id.welcomeText);
 
-        // Obtener el nombre del usuario desde el Intent
+        // obtiene el nombre del usuario desde el intent
         String userName = getIntent().getStringExtra("USER_NAME");
         if (userName != null) {
             welcomeText.setText("Bienvenido, " + userName);
@@ -37,6 +38,14 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, CrudEmpleadosActivity.class);
             startActivity(intent);
         });
+
+        // listener btn cerrar sesión
+        logoutButton.setOnClickListener(view -> {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        });
     }
 }
+
 

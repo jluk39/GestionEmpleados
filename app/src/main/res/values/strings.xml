@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">gestionEmpleados</string>
+
+    <string-array name="especialidades_array">
+        <item>Ayudante de Cocina</item>
+        <item>Bachero</item>
+        <item>Bartender</item>
+        <item>Cajero</item>
+        <item>Chef</item>
+        <item>Cocinero</item>
+        <item>Encargado</item>
+        <item>Limpieza</item>
+        <item>Mozo</item>
+    </string-array>
+
+    <string-array name="turnos_array">
+        <item>Mañana</item>
+        <item>Tarde</item>
+        <item>Noche</item>
+    </string-array>
 </resources>
