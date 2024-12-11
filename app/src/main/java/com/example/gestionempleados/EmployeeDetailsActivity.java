@@ -33,8 +33,8 @@ public class EmployeeDetailsActivity extends AppCompatActivity {
 
         String employeeName = getIntent().getStringExtra("EMPLOYEE_NAME");
         double employeeSalary = getIntent().getDoubleExtra("EMPLOYEE_SALARY", 0);
-        String employeePosition = getIntent().getStringExtra("EMPLOYEE_POSITION"); // Especialidad
-        String employeeShift = getIntent().getStringExtra("EMPLOYEE_SHIFT"); // Turno
+        String employeePosition = getIntent().getStringExtra("EMPLOYEE_POSITION"); // puesto
+        String employeeShift = getIntent().getStringExtra("EMPLOYEE_SHIFT"); // turno
         int employeeDni = getIntent().getIntExtra("EMPLOYEE_DNI", 0); // DNI
 
         welcomeText.setText("Bienvenido, " + employeeName);

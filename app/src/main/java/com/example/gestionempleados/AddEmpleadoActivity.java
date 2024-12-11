@@ -10,11 +10,15 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class AddEmpleadoActivity extends AppCompatActivity {
     private EditText nombreInput, apellidoInput, salarioInput, dniInput;
     private Spinner especialidadSpinner, turnoSpinner;
     private Button saveButton, cancelButton, deleteButton;
     private DatabaseHelper db;
+    private ExecutorService executorService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +38,9 @@ public class AddEmpleadoActivity extends AppCompatActivity {
         deleteButton.setVisibility(View.GONE);
 
         db = new DatabaseHelper(this);
+        executorService = Executors.newSingleThreadExecutor();
 
-        // Spinner de especialidad
+        // spinner de especialidad
         ArrayAdapter<CharSequence> especialidadAdapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.especialidades_array,
@@ -44,7 +49,7 @@ public class AddEmpleadoActivity extends AppCompatActivity {
         especialidadAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         especialidadSpinner.setAdapter(especialidadAdapter);
 
-        // Spinner de turno
+        // spinner de turno
         ArrayAdapter<CharSequence> turnoAdapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.turnos_array,
@@ -63,19 +68,30 @@ public class AddEmpleadoActivity extends AppCompatActivity {
 
             if (nombre.isEmpty() || apellido.isEmpty() || salarioStr.isEmpty() || dniStr.isEmpty()) {
                 Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
-            } else {
-                try {
-                    double salario = Double.parseDouble(salarioStr);
-                    int dni = Integer.parseInt(dniStr);
-                    if (db.agregarEmpleado(nombre, apellido, especialidad, turno, salario, dni)) {
-                        Toast.makeText(this, "Empleado agregado", Toast.LENGTH_SHORT).show();
-                        finish();
+                return;
+            }
+
+            try {
+                double salario = Double.parseDouble(salarioStr);
+                int dni = Integer.parseInt(dniStr);
+
+                executorService.execute(() -> {
+                    if (db.verificarDniUnico(dni)) {
+                        runOnUiThread(() -> Toast.makeText(this, "Ya existe un empleado con ese DNI", Toast.LENGTH_SHORT).show());
                     } else {
-                        Toast.makeText(this, "Error al agregar empleado", Toast.LENGTH_SHORT).show();
+                        boolean success = db.agregarEmpleado(nombre, apellido, especialidad, turno, salario, dni);
+                        runOnUiThread(() -> {
+                            if (success) {
+                                Toast.makeText(this, "Empleado agregado", Toast.LENGTH_SHORT).show();
+                                finish();
+                            } else {
+                                Toast.makeText(this, "Error al agregar empleado", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
-                } catch (NumberFormatException e) {
-                    Toast.makeText(this, "DNI y salario deben ser números válidos", Toast.LENGTH_SHORT).show();
-                }
+                });
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "DNI y salario deben ser números válidos", Toast.LENGTH_SHORT).show();
             }
         });
 

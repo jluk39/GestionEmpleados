@@ -9,11 +9,15 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class EditUsuarioActivity extends AppCompatActivity {
     private EditText nombreInput, usuarioInput, emailInput, passwordInput;
     private Button updateButton, cancelButton, deleteButton;
     private DatabaseHelper db;
     private int usuarioId;
+    private ExecutorService executorService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,8 +35,9 @@ public class EditUsuarioActivity extends AppCompatActivity {
         updateButton.setText("Actualizar");
 
         db = new DatabaseHelper(this);
+        executorService = Executors.newSingleThreadExecutor();
 
-        // obtiene ID del usuario desde el intent
+        // obtiene el ID del usuario desde el intent
         usuarioId = getIntent().getIntExtra("usuarioId", -1);
 
         cargarUsuario();
@@ -45,12 +50,20 @@ public class EditUsuarioActivity extends AppCompatActivity {
 
             if (nombre.isEmpty() || usuario.isEmpty() || email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
-            } else if (db.actualizarUsuario(usuarioId, nombre, usuario, email, password)) {
-                Toast.makeText(this, "Usuario actualizado", Toast.LENGTH_SHORT).show();
-                finish();
-            } else {
-                Toast.makeText(this, "Error al actualizar usuario", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            executorService.execute(() -> {
+                boolean success = db.actualizarUsuario(usuarioId, nombre, usuario, email, password);
+                runOnUiThread(() -> {
+                    if (success) {
+                        Toast.makeText(this, "Usuario actualizado", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        Toast.makeText(this, "Error al actualizar usuario", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            });
         });
 
         cancelButton.setOnClickListener(view -> finish());
@@ -59,17 +72,26 @@ public class EditUsuarioActivity extends AppCompatActivity {
     }
 
     private void cargarUsuario() {
-        Cursor cursor = db.obtenerUsuarios();
-        while (cursor.moveToNext()) {
-            if (cursor.getInt(0) == usuarioId) {
-                nombreInput.setText(cursor.getString(1));
-                usuarioInput.setText(cursor.getString(2));
-                emailInput.setText(cursor.getString(3));
-                passwordInput.setText(cursor.getString(4));
-                break;
+        executorService.execute(() -> {
+            Cursor cursor = db.obtenerUsuarios();
+            while (cursor.moveToNext()) {
+                if (cursor.getInt(0) == usuarioId) {
+                    String nombre = cursor.getString(1);
+                    String usuario = cursor.getString(2);
+                    String email = cursor.getString(3);
+                    String password = cursor.getString(4);
+
+                    runOnUiThread(() -> {
+                        nombreInput.setText(nombre);
+                        usuarioInput.setText(usuario);
+                        emailInput.setText(email);
+                        passwordInput.setText(password);
+                    });
+                    break;
+                }
             }
-        }
-        cursor.close();
+            cursor.close();
+        });
     }
 
     private void mostrarConfirmacionEliminacion() {
@@ -77,17 +99,19 @@ public class EditUsuarioActivity extends AppCompatActivity {
         builder.setTitle("Confirmar Eliminación");
         builder.setMessage("¿Estás seguro de que deseas eliminar este usuario?");
         builder.setPositiveButton("Sí", (dialog, which) -> {
-            if (db.eliminarUsuario(usuarioId)) {
-                Toast.makeText(this, "Usuario eliminado", Toast.LENGTH_SHORT).show();
-                finish();
-            } else {
-                Toast.makeText(this, "Error al eliminar usuario", Toast.LENGTH_SHORT).show();
-            }
+            executorService.execute(() -> {
+                boolean success = db.eliminarUsuario(usuarioId);
+                runOnUiThread(() -> {
+                    if (success) {
+                        Toast.makeText(this, "Usuario eliminado", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        Toast.makeText(this, "Error al eliminar usuario", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            });
         });
         builder.setNegativeButton("No", (dialog, which) -> dialog.dismiss());
         builder.show();
     }
 }
-
-
-

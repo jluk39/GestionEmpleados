@@ -8,10 +8,14 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class RegisterActivity extends AppCompatActivity {
     private EditText nameInput, usernameInput, emailInput, passwordInput;
     private Button registerButton, backButton;
     private DatabaseHelper db;
+    private ExecutorService executorService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +30,7 @@ public class RegisterActivity extends AppCompatActivity {
         backButton = findViewById(R.id.backButton);
 
         db = new DatabaseHelper(this);
+        executorService = Executors.newSingleThreadExecutor();
 
         registerButton.setOnClickListener(view -> {
             String name = nameInput.getText().toString().trim();
@@ -35,12 +40,22 @@ public class RegisterActivity extends AppCompatActivity {
 
             if (name.isEmpty() || username.isEmpty() || email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show();
-            } else if (db.registrarUsuario(name, username, email, password)) {
-                Toast.makeText(this, "Usuario registrado con éxito", Toast.LENGTH_SHORT).show();
-                finish();
-            } else {
-                Toast.makeText(this, "Error al registrar usuario", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            // operación de registro a un hilo secundario
+            executorService.execute(() -> {
+                boolean isRegistered = db.registrarUsuario(name, username, email, password);
+
+                runOnUiThread(() -> {
+                    if (isRegistered) {
+                        Toast.makeText(this, "Usuario registrado con éxito", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        Toast.makeText(this, "Error al registrar usuario", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            });
         });
 
         // vuelve a LoginActivity
@@ -50,7 +65,12 @@ public class RegisterActivity extends AppCompatActivity {
             finish();
         });
     }
-}
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executorService.shutdown(); // cierra executor
+    }
+}
 
 

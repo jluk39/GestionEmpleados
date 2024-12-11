@@ -11,6 +11,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CrudEmpleadosActivity extends AppCompatActivity {
     private ListView empleadosListView;
@@ -19,6 +21,7 @@ public class CrudEmpleadosActivity extends AppCompatActivity {
     private ArrayAdapter<String> adapter;
     private ArrayList<String> empleadosList;
     private ArrayList<Integer> empleadosIdList;
+    private ExecutorService executorService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +31,7 @@ public class CrudEmpleadosActivity extends AppCompatActivity {
         empleadosListView = findViewById(R.id.empleadosListView);
         noEmpleadosTextView = findViewById(R.id.noEmpleadosTextView);
         db = new DatabaseHelper(this);
+        executorService = Executors.newSingleThreadExecutor();
 
         findViewById(R.id.backToDashboardButton).setOnClickListener(view -> {
             Intent intent = new Intent(this, MainActivity.class);
@@ -61,39 +65,47 @@ public class CrudEmpleadosActivity extends AppCompatActivity {
     }
 
     private void cargarEmpleados() {
-        empleadosList = new ArrayList<>();
-        empleadosIdList = new ArrayList<>();
-        Cursor cursor = db.obtenerEmpleados();
+        executorService.execute(() -> {
+            empleadosList = new ArrayList<>();
+            empleadosIdList = new ArrayList<>();
+            Cursor cursor = db.obtenerEmpleados();
 
-        if (cursor.moveToFirst()) {
-            do {
-                empleadosIdList.add(cursor.getInt(0));
-                empleadosList.add(
-                        cursor.getString(1) + " " + cursor.getString(2) +
-                                " - " + cursor.getString(3) + " (" + cursor.getString(4) + ")"
-                );
-            } while (cursor.moveToNext());
-        }
+            if (cursor.moveToFirst()) {
+                do {
+                    empleadosIdList.add(cursor.getInt(0));
+                    empleadosList.add(
+                            cursor.getString(1) + " " + cursor.getString(2) +
+                                    " - " + cursor.getString(3) + " (" + cursor.getString(4) + ")"
+                    );
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
 
-        cursor.close();
-
-        if (empleadosList.isEmpty()) {
-            noEmpleadosTextView.setVisibility(TextView.VISIBLE);
-            empleadosListView.setVisibility(ListView.GONE);
-        } else {
-            noEmpleadosTextView.setVisibility(TextView.GONE);
-            empleadosListView.setVisibility(ListView.VISIBLE);
-            adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, empleadosList);
-            empleadosListView.setAdapter(adapter);
-        }
+            runOnUiThread(() -> {
+                if (empleadosList.isEmpty()) {
+                    noEmpleadosTextView.setVisibility(TextView.VISIBLE);
+                    empleadosListView.setVisibility(ListView.GONE);
+                } else {
+                    noEmpleadosTextView.setVisibility(TextView.GONE);
+                    empleadosListView.setVisibility(ListView.VISIBLE);
+                    adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, empleadosList);
+                    empleadosListView.setAdapter(adapter);
+                }
+            });
+        });
     }
 
     private void eliminarEmpleado(int empleadoId) {
-        if (db.eliminarEmpleado(empleadoId)) {
-            Toast.makeText(this, "Personal eliminado", Toast.LENGTH_SHORT).show();
-            cargarEmpleados();
-        } else {
-            Toast.makeText(this, "Error al eliminar personal", Toast.LENGTH_SHORT).show();
-        }
+        executorService.execute(() -> {
+            boolean result = db.eliminarEmpleado(empleadoId);
+            runOnUiThread(() -> {
+                if (result) {
+                    Toast.makeText(this, "Empleado eliminado", Toast.LENGTH_SHORT).show();
+                    cargarEmpleados();
+                } else {
+                    Toast.makeText(this, "Error al eliminar el empleado", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
     }
 }

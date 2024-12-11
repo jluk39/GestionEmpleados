@@ -45,7 +45,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion < 11) {
-            // Crear una tabla nueva con el campo dni como INTEGER UNIQUE
+            // tabla nueva con el campo dni como INTEGER UNIQUE
             String createEmpleadosTempTable = "CREATE TABLE empleados_new (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     "nombre TEXT, " +
@@ -56,14 +56,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     "dni INTEGER UNIQUE)";
             db.execSQL(createEmpleadosTempTable);
 
-            // Copiar datos de la tabla antigua
+            // copia datos de la tabla antigua
             db.execSQL("INSERT INTO empleados_new (id, nombre, apellido, especialidad, turno, salario) " +
                     "SELECT id, nombre, apellido, especialidad, turno, salario FROM empleados");
 
-            // Eliminar la tabla antigua
+            // elimina la tabla antigua
             db.execSQL("DROP TABLE empleados");
 
-            // Renombrar la tabla nueva
+            // renombra la tabla nueva
             db.execSQL("ALTER TABLE empleados_new RENAME TO empleados");
         }
     }
@@ -136,6 +136,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         int result = db.delete("empleados", "id = ?", new String[]{String.valueOf(id)});
         return result > 0;
+    }
+
+    public boolean verificarDniUnico(int dni) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM empleados WHERE dni = ?", new String[]{String.valueOf(dni)});
+        boolean existe = cursor.getCount() > 0;
+        cursor.close();
+        return existe;
     }
 
     public Cursor buscarEmpleadoPorDni(int dni) {

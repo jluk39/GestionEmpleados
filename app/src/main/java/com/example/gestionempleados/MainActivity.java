@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
     private Button crudUsuariosButton, crudEmpleadosButton, logoutButton;
-    private TextView welcomeText;
+    private TextView welcomeText, portalTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +20,10 @@ public class MainActivity extends AppCompatActivity {
         crudEmpleadosButton = findViewById(R.id.crudEmpleadosButton);
         logoutButton = findViewById(R.id.logoutButton);
         welcomeText = findViewById(R.id.welcomeText);
+        portalTitle = findViewById(R.id.portalTitle);
+
+
+        portalTitle.setText("Portal Gerencia - Restaurante Chefcito");
 
         // obtiene el nombre del usuario desde el intent
         String userName = getIntent().getStringExtra("USER_NAME");
@@ -47,5 +51,3 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 }
-
-

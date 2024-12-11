@@ -12,12 +12,16 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class EditEmpleadoActivity extends AppCompatActivity {
     private EditText nombreInput, apellidoInput, salarioInput, dniInput;
     private Spinner especialidadSpinner, turnoSpinner;
     private Button updateButton, cancelButton, deleteButton;
     private DatabaseHelper db;
     private int empleadoId;
+    private ExecutorService executorService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,9 +42,10 @@ public class EditEmpleadoActivity extends AppCompatActivity {
         deleteButton.setVisibility(View.VISIBLE);
 
         db = new DatabaseHelper(this);
+        executorService = Executors.newSingleThreadExecutor();
         empleadoId = getIntent().getIntExtra("empleadoId", -1);
 
-        // Spinner de especialidad
+        // spinner de especialidad
         ArrayAdapter<CharSequence> especialidadAdapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.especialidades_array,
@@ -49,7 +54,7 @@ public class EditEmpleadoActivity extends AppCompatActivity {
         especialidadAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         especialidadSpinner.setAdapter(especialidadAdapter);
 
-        // Spinner de turno
+        // spinner de turno
         ArrayAdapter<CharSequence> turnoAdapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.turnos_array,
@@ -70,19 +75,41 @@ public class EditEmpleadoActivity extends AppCompatActivity {
 
             if (nombre.isEmpty() || apellido.isEmpty() || salarioStr.isEmpty() || dniStr.isEmpty()) {
                 Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
-            } else {
-                try {
-                    double salario = Double.parseDouble(salarioStr);
-                    int dni = Integer.parseInt(dniStr);
-                    if (db.actualizarEmpleado(empleadoId, nombre, apellido, especialidad, turno, salario, dni)) {
-                        Toast.makeText(this, "Empleado actualizado", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Toast.makeText(this, "Error al actualizar empleado", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            try {
+                double salario = Double.parseDouble(salarioStr);
+                int dni = Integer.parseInt(dniStr);
+
+                executorService.execute(() -> {
+                    Cursor cursor = db.obtenerEmpleados();
+                    boolean dniDuplicado = false;
+
+                    while (cursor.moveToNext()) {
+                        if (cursor.getInt(0) != empleadoId && cursor.getInt(6) == dni) {
+                            dniDuplicado = true;
+                            break;
+                        }
                     }
-                } catch (NumberFormatException e) {
-                    Toast.makeText(this, "DNI y salario deben ser números válidos", Toast.LENGTH_SHORT).show();
-                }
+                    cursor.close();
+
+                    if (dniDuplicado) {
+                        runOnUiThread(() -> Toast.makeText(this, "Ya existe un empleado con ese DNI", Toast.LENGTH_SHORT).show());
+                    } else {
+                        boolean success = db.actualizarEmpleado(empleadoId, nombre, apellido, especialidad, turno, salario, dni);
+                        runOnUiThread(() -> {
+                            if (success) {
+                                Toast.makeText(this, "Empleado actualizado", Toast.LENGTH_SHORT).show();
+                                finish();
+                            } else {
+                                Toast.makeText(this, "Error al actualizar empleado", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                });
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "DNI y salario deben ser números válidos", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -107,7 +134,7 @@ public class EditEmpleadoActivity extends AppCompatActivity {
                 turnoSpinner.setSelection(turnoAdapter.getPosition(turno));
 
                 salarioInput.setText(String.valueOf(cursor.getDouble(5)));
-                dniInput.setText(String.valueOf(cursor.getInt(6))); // Carga el DNI
+                dniInput.setText(String.valueOf(cursor.getInt(6)));
                 break;
             }
         }
@@ -119,14 +146,20 @@ public class EditEmpleadoActivity extends AppCompatActivity {
         builder.setTitle("Confirmar Eliminación");
         builder.setMessage("¿Estás seguro de que deseas eliminar este empleado?");
         builder.setPositiveButton("Sí", (dialog, which) -> {
-            if (db.eliminarEmpleado(empleadoId)) {
-                Toast.makeText(this, "Empleado eliminado", Toast.LENGTH_SHORT).show();
-                finish();
-            } else {
-                Toast.makeText(this, "Error al eliminar empleado", Toast.LENGTH_SHORT).show();
-            }
+            executorService.execute(() -> {
+                boolean success = db.eliminarEmpleado(empleadoId);
+                runOnUiThread(() -> {
+                    if (success) {
+                        Toast.makeText(this, "Empleado eliminado", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        Toast.makeText(this, "Error al eliminar empleado", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            });
         });
         builder.setNegativeButton("No", (dialog, which) -> dialog.dismiss());
         builder.show();
     }
 }
+
